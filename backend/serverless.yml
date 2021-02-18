@@ -7,16 +7,29 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-2'}
+
+environment:
+  USERS_TABLE: Users-${self:provider.stage}
+  USER_ID_INDEX: UserIdIndex
+  TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
+  TODO_ITEMS_BUCKET: asmillie-udacity-todo-items-${self:provider.stage}
+  SIGNED_URL_EXPIRATION: 300
 
 custom:
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true
     packager: 'npm'
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: ToDo API
+        description: User-Managed Todo List Application for the Udacity Cloud Developer Nanodegree Course
 
 functions:
 
@@ -65,4 +78,37 @@ functions:
 
 resources:
   Resources:
-    # TODO: Add any necessary AWS resources
+    
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.USERS_TABLE}
+
+    TodoItemsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: ${self.provider.environment.USER_ID_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
