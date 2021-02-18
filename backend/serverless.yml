@@ -4,6 +4,8 @@ service:
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
 
 provider:
   name: aws
@@ -18,8 +20,6 @@ environment:
   TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
   TODO_ITEMS_BUCKET: asmillie-udacity-todo-items-${self:provider.stage}
   SIGNED_URL_EXPIRATION: 300
-  AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
-  AUTH_0_SECRET_FIELD: auth0Secret
 
 custom:
   webpack:
@@ -106,7 +106,7 @@ resources:
     TodoItemsBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.envrionment.TODO_ITEMS_BUCKET}
+        BucketName: ${self:provider.environment.TODO_ITEMS_BUCKET}
         CorsConfiguration:
           CorsRules:
             - AllowedMethods:
@@ -120,38 +120,4 @@ resources:
               AllowedHeaders:
                 - '*'
               MaxAge: 3000
-
-    Auth0KMSKey:
-      Type: AWS::KMS::Key
-      Properties:
-        Description: KMS Key for Auth0 Secret
-        KeyPolicy:
-          Version: '2012-10-17'
-          Id: key-auth0
-          Statement:
-            - Sid: Allow administration of the key
-              Effect: Allow
-              Principal:
-                AWS:
-                  Fn::Join:
-                    - ':'
-                    - - 'arn:aws:iam:'
-                      - Ref: AWS::AccountId
-                      - 'root'
-              Action:
-                - 'kms:*'
-              Resource: '*'
-
-    Auth0KMSKeyAlias:
-      Type: AWS::KMS::Alias
-      Properties:
-        AliasName: alias/auth0Key-${self:provider.stage}
-        TargetKeyId: !Ref Auth0KMSKey
-
-    Auth0Secret:
-      Type: AWS::SecretsManager::Secret
-      Properties:
-        Name: ${self:provider.environment.AUTH_0_SECRET_ID}
-        Description: Auth0 Secret
-        KmsKeyId: !Ref Auth0KMSKey
           
