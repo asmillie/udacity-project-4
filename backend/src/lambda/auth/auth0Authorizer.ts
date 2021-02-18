@@ -75,6 +75,7 @@ async function verifyToken(authHeader: string): Promise<JwtPayload | boolean> {
     console.log(`Error retrieving signing certificate from Auth0: ${err}`);
     return false;
   });
+  console.log(`Signing Cert from Auth0: ${cert}`);
 
   if (!cert || cert == '') {
     return false;
