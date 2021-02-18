@@ -112,3 +112,21 @@ resources:
               - AttributeName: userId
                 KeyType: HASH
         BillingMode: PAY_PER_REQUEST
+
+    TodoItemsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.envrionment.TODO_ITEMS_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              MaxAge: 3000
