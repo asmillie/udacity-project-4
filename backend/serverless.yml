@@ -83,12 +83,12 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         KeySchema:
-          - AttributeName: id
+          - AttributeName: todoId
             KeyType: HASH
           - AttributeName: userId
             KeyType: RANGE
         AttributeDefinitions:
-          - AttributeName: id
+          - AttributeName: todoId
             AttributeType: S
           - AttributeName: userId
             AttributeType: S
