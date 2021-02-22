@@ -4,10 +4,12 @@ import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } f
 
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 import { ToDoRepository } from '../../todo/todo.repository'
-import { prepareApiResponse } from '../utils'
+import { getUserId, prepareApiResponse } from '../utils'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const userId = getUserId(event);
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
+  newTodo['userId'] = userId;
   const toDoRepository = new ToDoRepository();
 
   const result = await toDoRepository.createToDo(newTodo);
