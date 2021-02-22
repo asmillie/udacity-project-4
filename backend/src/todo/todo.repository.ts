@@ -1,5 +1,7 @@
 import { TodoItem } from "../models/TodoItem";
 import { TodoUpdate } from "../models/TodoUpdate";
+import { CreateTodoRequest } from "../requests/CreateTodoRequest";
+import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 import { ToDoService } from "./todo.service";
 
 export class ToDoRepository {
@@ -14,12 +16,12 @@ export class ToDoRepository {
         return await this.todoService.getAllToDosByUserId(userId);
     }
 
-    async createToDo(todo: TodoItem): Promise<TodoItem> {
-        return await this.todoService.createToDo(todo);
+    async createToDo(createToDoRequest: CreateTodoRequest): Promise<TodoItem> {
+        return await this.todoService.createToDo(createToDoRequest);
     }
 
-    async updateToDo(todo: TodoItem, todoUpdate: TodoUpdate): Promise<TodoItem | undefined> {
-        return await this.todoService.updateToDo(todo, todoUpdate);
+    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
+        return await this.todoService.updateToDo(updateToDoRequest);
     }
 
     async deleteToDo(id: string) {
