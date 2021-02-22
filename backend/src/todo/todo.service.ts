@@ -4,7 +4,7 @@ import { TodoItem } from '../models/TodoItem';
 import { TodoUpdate } from '../models/TodoUpdate';
 import { createLogger } from '../utils/logger';
 
-export class ToDoRepository {
+export class ToDoService {
     private readonly logger;
 
     constructor(
@@ -42,7 +42,7 @@ export class ToDoRepository {
         return todo;
     }
 
-    async updateToDo(todo: TodoItem, todoUpdate: TodoUpdate): Promise<TodoItem> {
+    async updateToDo(todo: TodoItem, todoUpdate: TodoUpdate): Promise<TodoItem | undefined> {
         this.logger(`Updating todo for User Id ${todo.userId}`);
 
         await this.docClient.update({
@@ -57,7 +57,17 @@ export class ToDoRepository {
                 ':dueDate': todoUpdate.dueDate,
                 ':done': todoUpdate.done
             }
-        }).promise();
+        }).promise().then((data) => {
+            return data.$response.data as TodoItem;
+        }, (err) => {
+            this.logger(`Error during update operation: ${err}`);
+            throw new Error(`An error occurred during update operation: ${err}`);
+        }).catch(err => {
+            this.logger(`Error attempting update operation: ${err}`);
+            throw new Error(`An error occurred: ${err}`);
+        });
+
+        return undefined;
     }
 
     async deleteToDo(id: string) {
