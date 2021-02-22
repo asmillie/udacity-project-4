@@ -10,14 +10,12 @@ plugins:
 provider:
   name: aws
   runtime: nodejs12.x
-
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-2'}
-
-environment:
-  TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
-  TODO_ITEMS_BUCKET: asmillie-udacity-todo-items-${self:provider.stage}
-  SIGNED_URL_EXPIRATION: 300
+  environment:
+    TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
+    TODO_ITEMS_BUCKET: asmillie-udacity-todo-items-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
 
 custom:
   webpack:
@@ -30,51 +28,110 @@ custom:
         version: v1.0.0
         title: ToDo API
         description: User-Managed Todo List Application for the Udacity Cloud Developer Nanodegree Course
+      models:
+        - name: CreateTodoRequest
+          contentType: application/json
+          schema: ${file(models/create-todo-request.json)}
+        - name: UpdateTodoRequest
+          contentType: application/json
+          schema: ${file(models/update-todo-request.json)}
 
 functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  # TODO: Configure this function
   GetTodos:
     handler: src/lambda/http/getTodos.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
     events:
       - http:
           method: get
           path: todos
+          cors: true
+          authorizer: Auth
+          documentation:
+            summary: Get All To-Dos
+            description: Get all To-Do items for the current logged-in User
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
     events:
       - http:
           method: post
           path: todos
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a To-Do
+            description: Create a new To-Do Item for the current logged-in User
+            requestModels:
+              'application/json': CreateTodoRequest
 
-  # TODO: Configure this function
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
     events:
       - http:
           method: patch
           path: todos/{todoId}
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update a To-Do
+            description: Update a To-Do Item for the current logged-in User
+            requestModels:
+              'application/json': UpdateTodoRequest
 
-  # TODO: Configure this function
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
     events:
       - http:
           method: delete
           path: todos/{todoId}
+          authorizer: Auth
+          documentation:
+            summary: Delete a To-Do
+            description: Delete a To-Do Item for the current logged-in User
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:GetObject
+          - s3:PutObject
     events:
       - http:
           method: post
           path: todos/{todoId}/attachment
+          cors: true
+          authorizer: Auth
+          documentation:
+            summary: Get a Signed Url for Uploading to S3 Bucket
+            description: Returns a signed url that allows one item to be uploaded to an S3 Bucket
+
 
 resources:
   Resources:
