@@ -5,13 +5,17 @@ import { TodoItem } from '../models/TodoItem';
 import { CreateTodoRequest } from '../requests/CreateTodoRequest';
 import { createLogger } from '../utils/logger';
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
+import { S3 } from 'aws-sdk';
 
 export class ToDoService {
     private readonly logger;
 
     constructor(
         private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
-        private readonly todoTbl = process.env.TODO_ITEMS_TABLE
+        private readonly s3: S3 = new S3({signatureVersion: 'v4'}),
+        private readonly todoTbl = process.env.TODO_ITEMS_TABLE,
+        private readonly s3BucketName = process.env.TODO_ITEMS_BUCKET,
+        private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION
     ) {
         this.logger = createLogger('ToDoRepository');
     }
@@ -84,5 +88,13 @@ export class ToDoService {
                 'todoId': id
             }
         }).promise();
+    }
+
+    getUploadUrl(todoId: string): string {
+        return this.s3.getSignedUrl('putObject', {
+            Bucket: this.s3BucketName,
+            Key: todoId,
+            Expires: this.urlExpiration
+        });
     }
 }

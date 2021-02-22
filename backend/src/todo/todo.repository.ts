@@ -1,5 +1,4 @@
 import { TodoItem } from "../models/TodoItem";
-import { TodoUpdate } from "../models/TodoUpdate";
 import { CreateTodoRequest } from "../requests/CreateTodoRequest";
 import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 import { ToDoService } from "./todo.service";
@@ -26,5 +25,9 @@ export class ToDoRepository {
 
     async deleteToDo(id: string) {
         await this.todoService.deleteToDo(id);
+    }
+
+    getUploadUrl(id: string): string {
+        return this.todoService.getUploadUrl(id);
     }
 }
