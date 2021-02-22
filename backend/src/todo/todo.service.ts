@@ -1,8 +1,10 @@
 import * as AWS from 'aws-sdk';
+import { v4 as uuid } from 'uuid';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { TodoItem } from '../models/TodoItem';
-import { TodoUpdate } from '../models/TodoUpdate';
+import { CreateTodoRequest } from '../requests/CreateTodoRequest';
 import { createLogger } from '../utils/logger';
+import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 
 export class ToDoService {
     private readonly logger;
@@ -31,31 +33,34 @@ export class ToDoService {
         return result.Items as TodoItem[];
     }
 
-    async createToDo(todo: TodoItem): Promise<TodoItem> {
-        this.logger(`Creating todo for User Id ${todo.userId}`);
+    async createToDo(createToDoRequest: CreateTodoRequest): Promise<TodoItem> {
+        this.logger(`Creating todo for User Id ${createToDoRequest.userId}`);
 
-        await this.docClient.put({
+        const result = await this.docClient.put({
             TableName: this.todoTbl,
-            Item: todo
+            Item: {
+                todoId: uuid(),
+                ...createToDoRequest
+            }
         }).promise();
 
-        return todo;
+        return result.$response.data as TodoItem;
     }
 
-    async updateToDo(todo: TodoItem, todoUpdate: TodoUpdate): Promise<TodoItem | undefined> {
-        this.logger(`Updating todo for User Id ${todo.userId}`);
+    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
+        this.logger(`Updating todo for User Id ${updateToDoRequest.userId}`);
 
         await this.docClient.update({
             TableName: this.todoTbl,
             Key: {
-                'todoId': todo.todoId,
-                'userId': todo.userId
+                'todoId': updateToDoRequest.todoId,
+                'userId': updateToDoRequest.userId
             },
             UpdateExpression: 'set name = :name, dueDate = :dueDate, done = :done',
             ExpressionAttributeValues: {
-                ':name': todoUpdate.name,
-                ':dueDate': todoUpdate.dueDate,
-                ':done': todoUpdate.done
+                ':name': updateToDoRequest.name,
+                ':dueDate': updateToDoRequest.dueDate,
+                ':done': updateToDoRequest.done
             }
         }).promise().then((data) => {
             return data.$response.data as TodoItem;
