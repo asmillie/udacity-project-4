@@ -6,9 +6,10 @@ import { CreateTodoRequest } from '../requests/CreateTodoRequest';
 import { createLogger } from '../utils/logger';
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 import { S3 } from 'aws-sdk';
+import * as winston from 'winston';
 
 export class ToDoService {
-    private readonly logger;
+    private readonly logger: winston.Logger;
 
     constructor(
         private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
@@ -21,7 +22,7 @@ export class ToDoService {
     }
 
     async getAllToDosByUserId(userId: string): Promise<TodoItem[]> {
-        this.logger(`Getting all todos for User Id ${userId}`);
+        this.logger.info(`Getting all todos for User Id ${userId}`);
         if (!userId) {
             throw new Error('Missing userId while getting all todos');
         }
@@ -38,7 +39,7 @@ export class ToDoService {
     }
 
     async createToDo(createToDoRequest: CreateTodoRequest): Promise<TodoItem> {
-        this.logger(`Creating todo for User Id ${createToDoRequest.userId}`);
+        this.logger.info(`Creating todo for User Id ${createToDoRequest.userId}`);
 
         const result = await this.docClient.put({
             TableName: this.todoTbl,
@@ -52,7 +53,7 @@ export class ToDoService {
     }
 
     async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
-        this.logger(`Updating todo for User Id ${updateToDoRequest.userId}`);
+        this.logger.info(`Updating todo for User Id ${updateToDoRequest.userId}`);
 
         await this.docClient.update({
             TableName: this.todoTbl,
@@ -69,10 +70,10 @@ export class ToDoService {
         }).promise().then((data) => {
             return data.$response.data as TodoItem;
         }, (err) => {
-            this.logger(`Error during update operation: ${err}`);
+            this.logger.error(`Error during update operation: ${err}`);
             throw new Error(`An error occurred during update operation: ${err}`);
         }).catch(err => {
-            this.logger(`Error attempting update operation: ${err}`);
+            this.logger.error(`Error attempting update operation: ${err}`);
             throw new Error(`An error occurred: ${err}`);
         });
 
