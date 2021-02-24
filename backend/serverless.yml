@@ -28,18 +28,19 @@ custom:
         version: v1.0.0
         title: ToDo API
         description: User-Managed Todo List Application for the Udacity Cloud Developer Nanodegree Course
-      models:
-        - name: CreateTodoRequest
-          contentType: application/json
-          schema: ${file(models/create-todo-request.json)}
-        - name: UpdateTodoRequest
-          contentType: application/json
-          schema: ${file(models/update-todo-request.json)}
+    models:
+      - name: CreateTodoRequest
+        contentType: application/json
+        schema: ${file(models/create-todo-request.json)}
+      - name: UpdateTodoRequest
+        contentType: application/json
+        schema: ${file(models/update-todo-request.json)}
 
 functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
+    iamRoleStatements: []
 
   GetTodos:
     handler: src/lambda/http/getTodos.handler
@@ -122,6 +123,7 @@ functions:
         Action:
           - s3:GetObject
           - s3:PutObject
+        Resource: arn:aws:s3:::${self:provider.environment.TODO_ITEMS_BUCKET}/*
     events:
       - http:
           method: post
@@ -168,4 +170,27 @@ resources:
               AllowedHeaders:
                 - '*'
               MaxAge: 3000
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref TodoItemsBucket
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadforGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.TODO_ITEMS_BUCKET}/*'
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        RestApiId: 
+          Ref: ApiGatewayRestApi
+        Name: 'request-body-validator'
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
           
