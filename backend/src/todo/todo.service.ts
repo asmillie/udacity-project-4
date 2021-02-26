@@ -6,20 +6,18 @@ import { CreateTodoRequest } from '../requests/CreateTodoRequest';
 import { createLogger } from '../utils/logger';
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 import { S3 } from 'aws-sdk';
-import * as winston from 'winston';
 
 export class ToDoService {
-    private readonly logger: winston.Logger;
 
     constructor(
         private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
         private readonly s3: S3 = new S3({signatureVersion: 'v4'}),
         private readonly todoTbl = process.env.TODO_ITEMS_TABLE,
+        private readonly userIdIndex = process.env.USER_ID_INDEX,
         private readonly s3BucketName = process.env.TODO_ITEMS_BUCKET,
-        private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION
-    ) {
-        this.logger = createLogger('ToDoRepository');
-    }
+        private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION,
+        private readonly logger = createLogger('ToDoRepository')
+    ) {}
 
     async getAllToDosByUserId(userId: string): Promise<TodoItem[]> {
         this.logger.info(`Getting all todos for User Id ${userId}`);
@@ -27,15 +25,20 @@ export class ToDoService {
             throw new Error('Missing userId while getting all todos');
         }
 
-        const result = await this.docClient.query({
+        return await this.docClient.query({
             TableName: this.todoTbl,
+            IndexName: this.userIdIndex,
             KeyConditionExpression: 'userId = :userId',
             ExpressionAttributeValues: {
                 ':userId': userId
-            }
-        }).promise();
-
-        return result.Items as TodoItem[];
+            },
+            ScanIndexForward: false
+        }).promise().then(data => {
+            return data.$response.data as TodoItem[];
+        }, err => {
+            this.logger.error(`Error getting todo items for user id ${userId}: ${err}`);
+            throw new Error(`Error getting todo items for user id ${userId}`);
+        });
     }
 
     async createToDo(createToDoRequest: CreateTodoRequest): Promise<TodoItem> {
@@ -81,7 +84,7 @@ export class ToDoService {
     }
 
     async deleteToDo(id: string) {
-        this.logger(`Deleting todo item id ${id}`);
+        this.logger.info(`Deleting todo item id ${id}`);
 
         await this.docClient.delete({
             TableName: this.todoTbl,
@@ -92,6 +95,7 @@ export class ToDoService {
     }
 
     getUploadUrl(todoId: string): string {
+        this.logger.info(`Getting Signed Upload Url for todo Id ${todoId}`);
         return this.s3.getSignedUrl('putObject', {
             Bucket: this.s3BucketName,
             Key: todoId,
