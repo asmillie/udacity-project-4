@@ -19,14 +19,14 @@ import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
 
 interface TodosProps {
-  auth: Auth
-  history: History
+  auth: Auth;
+  history: History;
 }
 
 interface TodosState {
-  todos: Todo[]
-  newTodoName: string
-  loadingTodos: boolean
+  todos: Todo[];
+  newTodoName: string;
+  loadingTodos: boolean;
 }
 
 export class Todos extends React.PureComponent<TodosProps, TodosState> {
@@ -143,7 +143,11 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
       return this.renderLoading()
     }
 
-    return this.renderTodosList()
+    if (this.state.todos && this.state.todos.length > 0) {
+      return this.renderTodosList()
+    }
+
+    return
   }
 
   renderLoading() {
