@@ -34,7 +34,7 @@ export class ToDoService {
             },
             ScanIndexForward: false
         }).promise().then(data => {
-            return data.$response.data as TodoItem[];
+            return data.Items as TodoItem[];
         }, err => {
             this.logger.error(`Error getting todo items for user id ${userId}: ${err}`);
             throw new Error(`Error getting todo items for user id ${userId}`);
@@ -44,11 +44,16 @@ export class ToDoService {
     async createToDo(createToDoRequest: CreateTodoRequest): Promise<TodoItem> {
         this.logger.info(`Creating todo for User Id ${createToDoRequest.userId}`);
 
+        const dueDate = new Date(createToDoRequest.dueDate).toISOString();
+
         const result = await this.docClient.put({
             TableName: this.todoTbl,
             Item: {
                 todoId: uuid(),
-                ...createToDoRequest
+                createdAt: new Date().toISOString(),
+                done: false,
+                ...createToDoRequest,
+                dueDate
             }
         }).promise();
 

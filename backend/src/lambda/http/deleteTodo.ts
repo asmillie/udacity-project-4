@@ -9,6 +9,5 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoRepository = new ToDoRepository();
   await todoRepository.deleteToDo(todoId);
 
-  // TODO: Remove a TODO item by id
-  return prepareApiResponse(200, `Deleted todo item with id ${todoId}`);
+  return prepareApiResponse(200);
 }

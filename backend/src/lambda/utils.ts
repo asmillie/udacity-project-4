@@ -15,14 +15,12 @@ export function getUserId(event: APIGatewayProxyEvent): string {
   return parseUserId(jwtToken)
 }
 
-export function prepareApiResponse(statusCode: number, data: any): APIGatewayProxyResult {
+export function prepareApiResponse(statusCode: number, data: any = {}): APIGatewayProxyResult {
   return {
     statusCode,
     headers: {
       'Access-Control-Allow-Origin': '*'
     },
-    body: JSON.stringify({
-      data
-    })
+    body: JSON.stringify(data)
   };
 }

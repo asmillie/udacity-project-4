@@ -9,5 +9,5 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const toDoRepository = new ToDoRepository();
   const items = await toDoRepository.getAllToDosByUserId(userId);
 
-  return prepareApiResponse(200, items);
+  return prepareApiResponse(200, { items });
 }

@@ -10,5 +10,5 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   const signedUrl = todoRepository.getUploadUrl(todoId);
 
-  return prepareApiResponse(200, signedUrl);
+  return prepareApiResponse(200, { uploadUrl: signedUrl });
 }

@@ -14,6 +14,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   updatedTodo['userId'] = userId;
   const todoRepository = new ToDoRepository();
 
-  const result = await todoRepository.updateToDo(updatedTodo);
-  return prepareApiResponse(200, result);
+  await todoRepository.updateToDo(updatedTodo);
+
+  return prepareApiResponse(200);
 }
