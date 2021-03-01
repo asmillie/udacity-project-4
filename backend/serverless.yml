@@ -117,6 +117,7 @@ functions:
           method: delete
           path: todos/{todoId}
           authorizer: Auth
+          cors: true
           documentation:
             summary: Delete a To-Do
             description: Delete a To-Do Item for the current logged-in User
