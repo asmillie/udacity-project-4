@@ -109,7 +109,7 @@ export class ToDoService {
         return this.s3.getSignedUrl('putObject', {
             Bucket: this.s3BucketName,
             Key: todoId,
-            Expires: this.urlExpiration
+            Expires: this.urlExpiration.toString()
         });
     }
 }
