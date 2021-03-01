@@ -16,7 +16,7 @@ export class ToDoService {
         private readonly userIdIndex = process.env.USER_ID_INDEX,
         private readonly s3BucketName = process.env.TODO_ITEMS_BUCKET,
         private readonly urlExpiration = process.env.SIGNED_URL_EXPIRATION,
-        private readonly logger = createLogger('ToDoRepository')
+        private readonly logger = createLogger('ToDoService')
     ) {}
 
     async getAllToDosByUserId(userId: string): Promise<TodoItem[]> {
@@ -110,6 +110,24 @@ export class ToDoService {
             Bucket: this.s3BucketName,
             Key: todoId,
             Expires: parseInt(this.urlExpiration, 10)
+        });
+    }
+
+    async saveAttachmentUrl(todoId: string): Promise<void> {
+        const imageUrl = `http://${this.s3BucketName}.s3.amazonaws.com/${todoId}`
+
+        await this.docClient.update({
+            TableName: this.todoTbl,
+            Key: {
+                'todoId': todoId
+            },
+            UpdateExpression: 'set attachmentUrl = :url',
+            ExpressionAttributeValues: {
+                ':url': imageUrl
+            }
+        }).promise().catch(err => {
+            this.logger.error(`Error adding attachment Url to todo id ${todoId}: ${err}`);
+            throw new Error(`Error adding attachment Url: ${err}`);
         });
     }
 }

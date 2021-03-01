@@ -141,6 +141,25 @@ functions:
             summary: Get a Signed Url for Uploading to S3 Bucket
             description: Returns a signed url that allows one item to be uploaded to an S3 Bucket
 
+  ProcessTodoItemUploadNotifications:
+    handler: src/lambda/subscriptions/processTodoItemNotifications.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
+    iamRoleStatementsName: processNotificationsRole
+    events:
+      - sns:
+          topicName: ${self:custom.todoItemUploadTopic}
+          arn:
+            Fn::Join:
+              - ':'
+              - - arn:aws:sns
+                - Ref: AWS::Region
+                - Ref: AWS::AccountId
+                - ${self:custom.todoItemUploadTopic}
+
 
 resources:
   Resources:
@@ -173,7 +192,7 @@ resources:
       Properties:
         BucketName: ${self:provider.environment.TODO_ITEMS_BUCKET}
         NotificationConfiguration:
-          TopicConfiguration:
+          TopicConfigurations:
             - Event: s3:ObjectCreated:Put
               Topic: !Ref TodoItemUploadTopic
         CorsConfiguration:

@@ -19,7 +19,7 @@ export class ToDoRepository {
         return await this.todoService.createToDo(createToDoRequest);
     }
 
-    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
+    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem> {
         return await this.todoService.updateToDo(updateToDoRequest);
     }
 
@@ -29,5 +29,9 @@ export class ToDoRepository {
 
     getUploadUrl(id: string): string {
         return this.todoService.getUploadUrl(id);
+    }
+
+    async saveAttachmentUrl(id: string) {
+        return this.todoService.saveAttachmentUrl(id);
     }
 }
