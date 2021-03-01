@@ -46,7 +46,7 @@ export class ToDoService {
 
         const dueDate = new Date(createToDoRequest.dueDate).toISOString();
 
-        const result = await this.docClient.put({
+        return await this.docClient.put({
             TableName: this.todoTbl,
             Item: {
                 todoId: uuid(),
@@ -55,9 +55,12 @@ export class ToDoService {
                 ...createToDoRequest,
                 dueDate
             }
-        }).promise();
-
-        return result.$response.data as TodoItem;
+        }).promise().then(data => {
+            return data.Attributes as TodoItem;
+        }, err => {
+            this.logger.error(`Error creating new todo item from request: ${JSON.stringify(createToDoRequest)}. Error: ${err}`);
+            throw new Error(`Error creating new todo item: ${err}`);
+        });
     }
 
     async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
