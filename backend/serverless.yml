@@ -19,6 +19,7 @@ provider:
     USER_ID_INDEX: UserIdIndex
 
 custom:
+  todoItemUploadTopic: todoItemsUploadTopic-${self:provider.stage}
   webpack:
     webpackConfig: 'webpack.config.js'
     includeModules: true
@@ -168,8 +169,13 @@ resources:
 
     TodoItemsBucket:
       Type: AWS::S3::Bucket
+      DependsOn: TodoItemUploadTopicPolicy
       Properties:
         BucketName: ${self:provider.environment.TODO_ITEMS_BUCKET}
+        NotificationConfiguration:
+          TopicConfiguration:
+            - Event: s3:ObjectCreated:Put
+              Topic: !Ref TodoItemUploadTopic
         CorsConfiguration:
           CorsRules:
             - AllowedMethods:
@@ -197,6 +203,29 @@ resources:
               Principal: '*'
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.TODO_ITEMS_BUCKET}/*'
+
+    TodoItemUploadTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: Todo Item Attachment Upload Topic
+        TopicName: ${self:custom.todoItemUploadTopic}
+
+    TodoItemUploadTopicPolicy:
+      Type: AWS::SNS::TopicPolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: '*'
+              Action: sns:Publish
+              Resource: !Ref TodoItemUploadTopic
+              Condition:
+                ArnLike:
+                  AWS:SourceArn: arn:aws:s3:::${self:provider.environment.TODO_ITEMS_BUCKET}
+        Topics:
+          - !Ref TodoItemUploadTopic
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
