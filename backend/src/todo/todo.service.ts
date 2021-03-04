@@ -67,21 +67,24 @@ export class ToDoService {
         });
     }
 
-    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem | undefined> {
+    async updateToDo(updateToDoRequest: UpdateTodoRequest): Promise<TodoItem> {
         this.logger.info(`Updating todo for User Id ${updateToDoRequest.userId}`);
-
+        console.log(`Update Request: ${JSON.stringify(updateToDoRequest)}`);
         await this.docClient.update({
             TableName: this.todoTbl,
             Key: {
-                'todoId': updateToDoRequest.todoId,
-                'userId': updateToDoRequest.userId
+                'todoId': updateToDoRequest.todoId
             },
-            UpdateExpression: 'set name = :name, dueDate = :dueDate, done = :done',
+            UpdateExpression: 'set #nameField = :name, dueDate = :dueDate, done = :done',
             ExpressionAttributeValues: {
                 ':name': updateToDoRequest.name,
                 ':dueDate': updateToDoRequest.dueDate,
                 ':done': updateToDoRequest.done
-            }
+            },
+            ExpressionAttributeNames: {
+                '#nameField': 'name'
+            },
+            ReturnValues: 'ALL_NEW'
         }).promise().then((data) => {
             return data.$response.data as TodoItem;
         }, (err) => {
