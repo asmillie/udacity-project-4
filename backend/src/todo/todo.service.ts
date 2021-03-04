@@ -1,4 +1,4 @@
-import * as AWS from 'aws-sdk';
+import * as AWSXRay from 'aws-xray-sdk';
 import { v4 as uuid } from 'uuid';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import { TodoItem } from '../models/TodoItem';
@@ -7,11 +7,13 @@ import { createLogger } from '../utils/logger';
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 import { S3 } from 'aws-sdk';
 
+const AWS = AWSXRay.captureAWS(require('aws-sdk'));
+
 export class ToDoService {
 
     constructor(
         private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
-        private readonly s3: S3 = new S3({signatureVersion: 'v4'}),
+        private readonly s3: S3 = new AWS.S3({signatureVersion: 'v4'}),
         private readonly todoTbl = process.env.TODO_ITEMS_TABLE,
         private readonly userIdIndex = process.env.USER_ID_INDEX,
         private readonly s3BucketName = process.env.TODO_ITEMS_BUCKET,
