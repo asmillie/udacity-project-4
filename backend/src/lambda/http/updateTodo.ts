@@ -18,6 +18,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   await todoRepository.updateToDo(updatedTodo);
 
-  await saveExecutionTimeMetric('Lambda','UpdateTodo',startTimeMS);
+  await saveExecutionTimeMetric('UpdateTodo',startTimeMS);
   return prepareApiResponse(200);
 }

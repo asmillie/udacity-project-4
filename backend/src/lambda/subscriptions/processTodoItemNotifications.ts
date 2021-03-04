@@ -11,5 +11,5 @@ export const handler: SNSHandler = async (event: SNSEvent) => {
             await toDoRepository.saveAttachmentUrl(eventRecord.s3.object.key);
         }
     }
-    await saveExecutionTimeMetric('Lambda','ProcessTodoItemNotifications',startTimeMS);
+    await saveExecutionTimeMetric('ProcessTodoItemNotifications',startTimeMS);
 }

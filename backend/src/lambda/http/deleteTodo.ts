@@ -11,6 +11,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoRepository = new ToDoRepository();
   await todoRepository.deleteToDo(todoId);
 
-  await saveExecutionTimeMetric('Lambda','DeleteTodo',startTimeMS);
+  await saveExecutionTimeMetric('DeleteTodo',startTimeMS);
   return prepareApiResponse(200);
 }

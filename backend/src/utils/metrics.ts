@@ -8,10 +8,10 @@ const Namespace = process.env.METRIC_NAMESPACE;
 
 const logger = createLogger('MetricUtils');
 
-export async function saveExecutionTimeMetric(serviceName: string, functionName: string, startTimeMS: number) {
+export async function saveExecutionTimeMetric(serviceName: string, startTimeMS: number) {
     const endTimeMS = new Date().getTime();
     const timeTakenInMS = endTimeMS - startTimeMS;
-    console.log(`Execution time of ${functionName}: start: ${startTimeMS}, end: ${endTimeMS} -> time taken: ${timeTakenInMS}`);
+  
     const params: PutMetricDataInput = {
       MetricData: [
         {

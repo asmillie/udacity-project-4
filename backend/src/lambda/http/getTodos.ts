@@ -11,6 +11,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const toDoRepository = new ToDoRepository();
   const items = await toDoRepository.getAllToDosByUserId(userId);
 
-  await saveExecutionTimeMetric('Lambda','GetTodos',startTimeMS);
+  await saveExecutionTimeMetric('GetTodos',startTimeMS);
   return prepareApiResponse(200, { items });
 }
